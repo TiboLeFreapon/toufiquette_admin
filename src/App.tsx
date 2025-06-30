@@ -57,7 +57,7 @@ const AuthNav: React.FC = () => {
         <>
           <Link to="/events" className="nav-link">Événements</Link>
           <Link to="/add-event" className="nav-link">Ajouter un Événement</Link>
-          <button onClick={handleLogout} className="nav-link">Déconnexion</button>
+          <button onClick={handleLogout} className="nav-link logout">Déconnexion</button>
         </>
       ) : (
         <>

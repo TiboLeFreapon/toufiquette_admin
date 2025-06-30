@@ -97,32 +97,10 @@ export const eventService = {
   },
 
   // Mettre à jour un événement
-  async updateEvent(id: string, eventData: Partial<EventFormData>): Promise<void> {
+  async updateEvent(eventId: string, updatedData: Partial<Event>): Promise<void> {
     try {
-      const docRef = doc(db, EVENTS_COLLECTION, id);
-      const updateData: any = {
-        ...eventData,
-        updatedAt: Timestamp.now()
-      };
-
-      // Si la date ou l'heure est modifiée, recalculer les timestamps
-      if (eventData.date && eventData.time) {
-        const [startTime, endTime] = eventData.time.split(' - ');
-        const [day, month, year] = eventData.date.split('/');
-        
-        const startDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        const [startHour, startMinute] = startTime.split(':');
-        startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
-        
-        const endDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        const [endHour, endMinute] = endTime.split(':');
-        endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
-
-        updateData.eventStartTimestamp = Timestamp.fromDate(startDateTime);
-        updateData.eventEndTimestamp = Timestamp.fromDate(endDateTime);
-      }
-
-      await updateDoc(docRef, updateData);
+      const eventRef = doc(db, EVENTS_COLLECTION, eventId);
+      await updateDoc(eventRef, updatedData);
     } catch (error) {
       console.error('Erreur lors de la mise à jour de l\'événement:', error);
       throw error;

@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { eventService } from '../services/eventService';
 import { Event } from '../types/event';
 import { useAuth } from '../context/AuthContext';
+import EditEventModal from './EditEventModal';
 
 const EventList: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
 
   useEffect(() => {
     loadEvents();
@@ -43,6 +46,24 @@ const EventList: React.FC = () => {
     if (!timestamp) return 'N/A';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleEditClick = (event: Event) => {
+    setEditingEvent(event);
+  };
+
+  const handleEditSubmit = async (updated: Partial<Event>) => {
+    if (!editingEvent) return;
+    setEditLoading(true);
+    try {
+      await eventService.updateEvent(editingEvent.id!, updated);
+      setEditingEvent(null);
+      await loadEvents();
+    } catch (err) {
+      setEditLoading(false);
+      throw err;
+    }
+    setEditLoading(false);
   };
 
   if (loading) {
@@ -87,7 +108,7 @@ const EventList: React.FC = () => {
             }
 
             return (
-              <div key={event.id} className={cardClasses}>
+              <div key={event.id} className={cardClasses} style={{ position: 'relative' }}>
                 {statusBadge}
                 <div className="card-content">
                   <div className="flex items-center justify-between mb-4">
@@ -143,11 +164,29 @@ const EventList: React.FC = () => {
                     <div>Créé le: {formatDate(event.createdAt)}</div>
                     <div>Modifié le: {formatDate(event.updatedAt)}</div>
                   </div>
+                  {!isPast && (
+                    <button
+                      className="edit-btn"
+                      title="Modifier l'événement"
+                      onClick={() => handleEditClick(event)}
+                      style={{ position: 'absolute', bottom: '1rem', right: '1rem', zIndex: 20 }}
+                    >
+                      Modifier
+                    </button>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+      {editingEvent && (
+        <EditEventModal
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+          onSubmit={handleEditSubmit}
+          loading={editLoading}
+        />
       )}
     </div>
   );

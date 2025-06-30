@@ -1395,4 +1395,35 @@ code {
 
 .dot.indigo {
   background-color: #818cf8;
+}
+
+.edit-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.4rem 1.1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.edit-btn:hover {
+  background: #1d4ed8;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.15);
+}
+
+/* Style spécial pour le bouton de déconnexion dans la nav */
+.nav-link:last-child, .nav-link.logout {
+  background: #dc2626;
+  color: #fff;
+  border-radius: 0.5rem;
+  padding: 0.4rem 1.1rem;
+  margin-left: 0.5rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.nav-link:last-child:hover, .nav-link.logout:hover {
+  background: #b91c1c;
 } 
