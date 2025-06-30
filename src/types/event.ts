@@ -4,38 +4,32 @@ export interface Event {
   id?: string;
   title: string;
   description: string;
-  date: string;
-  time: string;
+  address: string;
+  latitude?: number;
+  longitude?: number;
   category: string;
-  tags: string[];
   image: string;
+  tags: string[];
   isActive: boolean;
-  
-  // Champs de l'organisateur (dénormalisés)
   organizerId: string;
   organizerName: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  
-  // Timestamps
-  eventStartTimestamp: Timestamp;
-  eventEndTimestamp: Timestamp;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  eventStartTimestamp: Date | Timestamp;
+  eventEndTimestamp: Date | Timestamp;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
 }
 
 export interface EventFormData {
   title: string;
   description: string;
-  date: string;
-  time: string;
   address: string;
   latitude: number;
   longitude: number;
   category: string;
   tags: string[];
   image: string;
+  eventStartTimestamp: Date | null;
+  eventEndTimestamp: Date | null;
 }
 
 export const EVENT_CATEGORIES = [
@@ -69,5 +63,5 @@ export const CATEGORY_ICONS: Record<string, string[]> = {
 export const SPECIAL_ICONS: Record<string, string[]> = {
   'Nature': ['🌲', '🌳', '🌴', '🌵', '🌾', '🌿', '☘️', '🍀', '🍁', '🍂', '🍃', '🌸', '🌺', '🌻', '🌼', '🌷', '🌱', '🌲'],
   'Tourisme': ['🗺️', '🧭', '🏔️', '🏖️', '🏝️', '🏜️', '🏛️', '🏰', '🏯', '🏟️', '🎡', '🎢', '🎠', '⛰️', '🌊', '🏄', '🚣', '⛵'],
-  'Spectacle': ['🎭', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎻', '🎺', '🎷', '🥁', '🎵', '🎶', '🎸', '��', '🎻', '🥁']
+  'Spectacle': ['🎭', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎻', '🎺', '🎷', '🥁', '🎵', '��', '🎻', '🥁']
 }; 

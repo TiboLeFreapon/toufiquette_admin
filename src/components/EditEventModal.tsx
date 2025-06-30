@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Event } from '../types/event';
 import IconSelector from './IconSelector';
 import { EVENT_CATEGORIES } from '../types/event';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 interface EditEventModalProps {
   event: Event;
@@ -10,30 +12,19 @@ interface EditEventModalProps {
   loading: boolean;
 }
 
-const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmit, loading }) => {
-  // Conversion des timestamps en date/heure string si besoin
-  const getDateString = () => {
-    if (event.date) return event.date;
-    if (event.eventStartTimestamp) {
-      const d = event.eventStartTimestamp.toDate();
-      return d.toLocaleDateString('fr-CA').split('-').reverse().join('/');
-    }
-    return '';
-  };
-  const getTimeString = () => {
-    if (event.time) return event.time;
-    if (event.eventStartTimestamp && event.eventEndTimestamp) {
-      const start = event.eventStartTimestamp.toDate();
-      const end = event.eventEndTimestamp.toDate();
-      return `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')} - ${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`;
-    }
-    return '';
-  };
+// Utilitaire pour obtenir un objet Date
+function toDate(val: Date | { toDate: () => Date } | null | undefined): Date | null {
+  if (!val) return null;
+  if (val instanceof Date) return val;
+  if (typeof val === 'object' && typeof (val as any).toDate === 'function') return (val as any).toDate();
+  return null;
+}
 
+const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmit, loading }) => {
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);
-  const [date, setDate] = useState(getDateString());
-  const [time, setTime] = useState(getTimeString());
+  const [eventStartTimestamp, setEventStartTimestamp] = useState<Date | null>(toDate(event.eventStartTimestamp));
+  const [eventEndTimestamp, setEventEndTimestamp] = useState<Date | null>(toDate(event.eventEndTimestamp));
   const [address, setAddress] = useState(event.address);
   const [latitude, setLatitude] = useState(event.latitude || 0);
   const [longitude, setLongitude] = useState(event.longitude || 0);
@@ -57,18 +48,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmi
 
   // Validation
   const validate = () => {
-    if (!title || !description || !date || !time || !address) {
+    if (!title || !description || !eventStartTimestamp || !eventEndTimestamp || !address) {
       setError('Veuillez remplir tous les champs obligatoires');
       return false;
     }
-    const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-    if (!dateRegex.test(date)) {
-      setError('Le format de date doit être JJ/MM/AAAA');
-      return false;
-    }
-    const timeRegex = /^\d{2}:\d{2} - \d{2}:\d{2}$/;
-    if (!timeRegex.test(time)) {
-      setError("Le format d'heure doit être HH:MM - HH:MM");
+    if (eventEndTimestamp < eventStartTimestamp) {
+      setError('La date de fin doit être postérieure à la date de début');
       return false;
     }
     return true;
@@ -82,8 +67,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmi
       await onSubmit({
         title,
         description,
-        date,
-        time,
+        eventStartTimestamp,
+        eventEndTimestamp,
         address,
         latitude,
         longitude,
@@ -115,6 +100,24 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmi
           flexDirection: 'column',
         }}
       >
+        <button
+          onClick={onClose}
+          aria-label="Fermer la modale"
+          style={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            background: 'transparent',
+            border: 'none',
+            fontSize: 28,
+            fontWeight: 700,
+            color: '#64748b',
+            cursor: 'pointer',
+            zIndex: 10
+          }}
+        >
+          ×
+        </button>
         <h2 className="modal-title section-title" style={{ textAlign: 'center', marginBottom: 24 }}>Modifier l'événement</h2>
         <form
           onSubmit={handleSubmit}
@@ -129,13 +132,36 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmi
             <label className="form-label">Description *</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} className="form-textarea" rows={3} required />
           </div>
-          <div className="group">
-            <label className="form-label">Date (JJ/MM/AAAA) *</label>
-            <input type="text" value={date} onChange={e => setDate(e.target.value)} className="form-input" required placeholder="25/12/2024" />
-          </div>
-          <div className="group">
-            <label className="form-label">Heure (HH:MM - HH:MM) *</label>
-            <input type="text" value={time} onChange={e => setTime(e.target.value)} className="form-input" required placeholder="19:00 - 23:00" />
+          <div className="flex flex-col items-center gap-6">
+            <div className="group">
+              <label className="form-label">Date et heure de début *</label>
+              <DatePicker
+                selected={eventStartTimestamp}
+                onChange={date => setEventStartTimestamp(date)}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
+                className="form-input"
+                placeholderText="Sélectionner la date et l'heure de début"
+                required
+              />
+            </div>
+            <div className="group">
+              <label className="form-label">Date et heure de fin *</label>
+              <DatePicker
+                selected={eventEndTimestamp}
+                onChange={date => setEventEndTimestamp(date)}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="dd/MM/yyyy HH:mm"
+                className="form-input"
+                placeholderText="Sélectionner la date et l'heure de fin"
+                required
+                minDate={eventStartTimestamp || undefined}
+              />
+            </div>
           </div>
           <div className="group">
             <label className="form-label">Adresse *</label>
@@ -184,7 +210,6 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmi
           </div>
           {error && <div className="modal-error" style={{ color: '#dc2626', marginBottom: 8 }}>{error}</div>}
           <div className="modal-actions flex justify-between mt-6">
-            <button type="button" onClick={onClose} className="modal-cancel btn-secondary">Annuler</button>
             <button type="submit" className="modal-submit btn-primary" disabled={loading}>{loading ? 'Modification...' : 'Modifier'}</button>
           </div>
         </form>

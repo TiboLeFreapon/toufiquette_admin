@@ -4,6 +4,8 @@ import { EventFormData, EVENT_CATEGORIES } from '../types/event';
 import IconSelector from './IconSelector';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const EventForm: React.FC = () => {
   const { organizerProfile, currentUser } = useAuth();
@@ -11,14 +13,14 @@ const EventForm: React.FC = () => {
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
-    date: '',
-    time: '',
     address: organizerProfile?.address || '',
     latitude: organizerProfile?.latitude || 0,
     longitude: organizerProfile?.longitude || 0,
     category: 'Musique',
     tags: [],
-    image: '🎵'
+    image: '🎵',
+    eventStartTimestamp: null,
+    eventEndTimestamp: null,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,6 +82,13 @@ const EventForm: React.FC = () => {
     }));
   };
 
+  const handleStartDateChange = (date: Date | null) => {
+    setFormData(prev => ({ ...prev, eventStartTimestamp: date }));
+  };
+  const handleEndDateChange = (date: Date | null) => {
+    setFormData(prev => ({ ...prev, eventEndTimestamp: date }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -89,43 +98,29 @@ const EventForm: React.FC = () => {
       if (!currentUser || !organizerProfile) {
         throw new Error("Utilisateur non authentifié ou profil introuvable.");
       }
-      
-      // Validation basique
-      if (!formData.title || !formData.description || !formData.date || !formData.time || !formData.address) {
+      if (!formData.title || !formData.description || !formData.address || !formData.eventStartTimestamp || !formData.eventEndTimestamp) {
         throw new Error('Veuillez remplir tous les champs obligatoires');
       }
-
-      // Validation du format de date (DD/MM/YYYY)
-      const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-      if (!dateRegex.test(formData.date)) {
-        throw new Error('Le format de date doit être DD/MM/YYYY');
+      if (formData.eventEndTimestamp < formData.eventStartTimestamp) {
+        throw new Error('La date de fin doit être postérieure à la date de début');
       }
-
-      // Validation du format d'heure (HH:MM - HH:MM)
-      const timeRegex = /^\d{2}:\d{2} - \d{2}:\d{2}$/;
-      if (!timeRegex.test(formData.time)) {
-        throw new Error("Le format d'heure doit être HH:MM - HH:MM");
-      }
-
       const eventId = await eventService.addEvent(
         formData,
         currentUser.uid,
         organizerProfile.organizerName
       );
       setMessage({ type: 'success', text: `Événement créé avec succès! ID: ${eventId}` });
-      
-      // Réinitialiser le formulaire
       setFormData({
         title: '',
         description: '',
-        date: '',
-        time: '',
         address: organizerProfile?.address || '',
         latitude: organizerProfile?.latitude || 0,
         longitude: organizerProfile?.longitude || 0,
         category: 'Musique',
         tags: [],
-        image: '🎵'
+        image: '🎵',
+        eventStartTimestamp: null,
+        eventEndTimestamp: null,
       });
     } catch (error) {
       setMessage({ 
@@ -201,36 +196,35 @@ const EventForm: React.FC = () => {
               <div className="section-divider green-blue"></div>
             </div>
 
-            {/* Date et Heure */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="group">
-                <label htmlFor="date" className="form-label">
-                  Date (DD/MM/YYYY) *
-                </label>
-                <input
-                  type="text"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
+            {/* Date et Heure (nouveau) */}
+            <div className="flex flex-col items-center gap-6">
+              <div className="group w-full max-w-xs flex flex-col justify-center items-center">
+                <label className="form-label w-fit">Date et heure de début *</label>
+                <DatePicker
+                  selected={formData.eventStartTimestamp}
+                  onChange={handleStartDateChange}
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  dateFormat="dd/MM/yyyy HH:mm"
                   className="form-input"
-                  placeholder="25/12/2024"
+                  placeholderText="Sélectionner la date et l'heure de début"
                   required
                 />
               </div>
-              <div className="group">
-                <label htmlFor="time" className="form-label">
-                  Heure (HH:MM - HH:MM) *
-                </label>
-                <input
-                  type="text"
-                  id="time"
-                  name="time"
-                  value={formData.time}
-                  onChange={handleInputChange}
+              <div className="group w-full max-w-xs flex flex-col justify-center items-center">
+                <label className="form-label w-fit">Date et heure de fin *</label>
+                <DatePicker
+                  selected={formData.eventEndTimestamp}
+                  onChange={handleEndDateChange}
+                  showTimeSelect
+                  timeFormat="HH:mm"
+                  timeIntervals={15}
+                  dateFormat="dd/MM/yyyy HH:mm"
                   className="form-input"
-                  placeholder="19:00 - 23:00"
+                  placeholderText="Sélectionner la date et l'heure de fin"
                   required
+                  minDate={formData.eventStartTimestamp || undefined}
                 />
               </div>
             </div>

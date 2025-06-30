@@ -36,15 +36,22 @@ const EventList: React.FC = () => {
     }
   };
 
+  const getDate = (val: any): Date | undefined => {
+    if (!val) return undefined;
+    if (val instanceof Date) return val;
+    if (typeof val === 'object' && typeof val.toDate === 'function') return val.toDate();
+    return undefined;
+  };
+
   const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'N/A';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = getDate(timestamp);
+    if (!date) return 'N/A';
     return date.toLocaleDateString('fr-FR');
   };
 
   const formatTime = (timestamp: any) => {
-    if (!timestamp) return 'N/A';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = getDate(timestamp);
+    if (!date) return 'N/A';
     return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -95,7 +102,7 @@ const EventList: React.FC = () => {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {events.map((event) => {
-            const isPast = event.eventEndTimestamp.toDate() < new Date();
+            const isPast = getDate(event.eventEndTimestamp) && getDate(event.eventEndTimestamp)! < new Date();
             const cardClasses = `card ${isPast ? 'is-past' : ''}`;
 
             let statusBadge = null;
@@ -125,13 +132,12 @@ const EventList: React.FC = () => {
                   
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center">
-                      <span className="font-medium">Date:</span>
-                      <span className="ml-2">{event.date}</span>
-                    </div>
-                    
-                    <div className="flex items-center">
-                      <span className="font-medium">Heure:</span>
-                      <span className="ml-2">{event.time}</span>
+                      <span className="font-medium">Période:</span>
+                      <span className="ml-2">
+                        {formatDate(event.eventStartTimestamp)} {formatTime(event.eventStartTimestamp)}
+                        {' - '}
+                        {formatDate(event.eventEndTimestamp)} {formatTime(event.eventEndTimestamp)}
+                      </span>
                     </div>
                     
                     <div className="flex items-center">
@@ -164,16 +170,14 @@ const EventList: React.FC = () => {
                     <div>Créé le: {formatDate(event.createdAt)}</div>
                     <div>Modifié le: {formatDate(event.updatedAt)}</div>
                   </div>
-                  {!isPast && (
-                    <button
+                  <button
                       className="edit-btn"
                       title="Modifier l'événement"
                       onClick={() => handleEditClick(event)}
                       style={{ position: 'absolute', bottom: '1rem', right: '1rem', zIndex: 20 }}
                     >
                       Modifier
-                    </button>
-                  )}
+                  </button>
                 </div>
               </div>
             );

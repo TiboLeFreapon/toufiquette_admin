@@ -1426,4 +1426,8 @@ code {
 }
 .nav-link:last-child:hover, .nav-link.logout:hover {
   background: #b91c1c;
+}
+
+.react-datepicker-popper {
+  z-index: 3000 !important;
 } 

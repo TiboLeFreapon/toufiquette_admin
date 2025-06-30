@@ -25,30 +25,17 @@ export const eventService = {
   ): Promise<string> {
     try {
       const now = Timestamp.now();
-      
-      // Convertir la date et l'heure en timestamps
-      const [startTime, endTime] = eventData.time.split(' - ');
-      const [day, month, year] = eventData.date.split('/');
-      
-      const startDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      const [startHour, startMinute] = startTime.split(':');
-      startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
-      
-      const endDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      const [endHour, endMinute] = endTime.split(':');
-      endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
-
+      // Conversion des dates JS en Timestamp Firebase
       const event: Omit<Event, 'id'> = {
         ...eventData,
         organizerId,
         organizerName,
-        eventStartTimestamp: Timestamp.fromDate(startDateTime),
-        eventEndTimestamp: Timestamp.fromDate(endDateTime),
+        eventStartTimestamp: eventData.eventStartTimestamp ? Timestamp.fromDate(eventData.eventStartTimestamp) : now,
+        eventEndTimestamp: eventData.eventEndTimestamp ? Timestamp.fromDate(eventData.eventEndTimestamp) : now,
         createdAt: now,
         updatedAt: now,
         isActive: true
       };
-
       const docRef = await addDoc(collection(db, EVENTS_COLLECTION), event);
       return docRef.id;
     } catch (error) {
@@ -96,11 +83,20 @@ export const eventService = {
     }
   },
 
-  // Mettre à jour un événement
+  // Mettre à jour un événement existant
   async updateEvent(eventId: string, updatedData: Partial<Event>): Promise<void> {
     try {
       const eventRef = doc(db, EVENTS_COLLECTION, eventId);
-      await updateDoc(eventRef, updatedData);
+      // Conversion éventuelle des dates JS en Timestamp Firebase
+      const dataToUpdate: any = { ...updatedData };
+      if (dataToUpdate.eventStartTimestamp instanceof Date) {
+        dataToUpdate.eventStartTimestamp = Timestamp.fromDate(dataToUpdate.eventStartTimestamp);
+      }
+      if (dataToUpdate.eventEndTimestamp instanceof Date) {
+        dataToUpdate.eventEndTimestamp = Timestamp.fromDate(dataToUpdate.eventEndTimestamp);
+      }
+      dataToUpdate.updatedAt = Timestamp.now();
+      await updateDoc(eventRef, dataToUpdate);
     } catch (error) {
       console.error('Erreur lors de la mise à jour de l\'événement:', error);
       throw error;
