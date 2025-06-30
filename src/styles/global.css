@@ -1308,15 +1308,6 @@ code {
   position: relative;
   overflow: hidden;
 }
-
-.page-header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, rgba(37, 99, 235, 0.2), rgba(147, 51, 234, 0.2));
-  backdrop-filter: blur(4px);
-}
-
 .page-header::after {
   content: '';
   position: absolute;
@@ -1329,17 +1320,6 @@ code {
   transform: translate(-50%, -50%);
 }
 
-.page-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 24rem;
-  height: 24rem;
-  background: rgba(192, 132, 252, 0.1);
-  border-radius: 9999px;
-  transform: translate(50%, -50%);
-}
 
 .page-content {
   position: relative;
