@@ -20,6 +20,15 @@ function toDate(val: Date | { toDate: () => Date } | null | undefined): Date | n
   return null;
 }
 
+const formatDate = (date: Date | null) => {
+  if (!date) return '';
+  return date.toLocaleDateString('fr-CA', { timeZone: 'America/Toronto' });
+};
+const formatTime = (date: Date | null) => {
+  if (!date) return '';
+  return date.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
+};
+
 const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmit, loading }) => {
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);
@@ -67,8 +76,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ event, onClose, onSubmi
       await onSubmit({
         title,
         description,
-        eventStartTimestamp,
-        eventEndTimestamp,
+        eventStartTimestamp: eventStartTimestamp ?? undefined,
+        eventEndTimestamp: eventEndTimestamp ?? undefined,
         address,
         latitude,
         longitude,

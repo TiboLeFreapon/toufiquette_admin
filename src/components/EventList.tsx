@@ -46,13 +46,13 @@ const EventList: React.FC = () => {
   const formatDate = (timestamp: any) => {
     const date = getDate(timestamp);
     if (!date) return 'N/A';
-    return date.toLocaleDateString('fr-FR');
+    return date.toLocaleDateString('fr-CA', { timeZone: 'America/Toronto' });
   };
 
   const formatTime = (timestamp: any) => {
     const date = getDate(timestamp);
     if (!date) return 'N/A';
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
   };
 
   const handleEditClick = (event: Event) => {
