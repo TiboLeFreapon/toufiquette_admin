@@ -18,7 +18,11 @@ const EVENTS_COLLECTION = 'events';
 
 export const eventService = {
   // Ajouter un nouvel événement
-  async addEvent(eventData: EventFormData): Promise<string> {
+  async addEvent(
+    eventData: EventFormData, 
+    organizerId: string, 
+    organizerName: string
+  ): Promise<string> {
     try {
       const now = Timestamp.now();
       
@@ -35,18 +39,11 @@ export const eventService = {
       endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
 
       const event: Omit<Event, 'id'> = {
-        title: eventData.title,
-        description: eventData.description,
-        date: eventData.date,
-        time: eventData.time,
-        address: eventData.address,
-        latitude: eventData.latitude,
-        longitude: eventData.longitude,
-        category: eventData.category,
+        ...eventData,
+        organizerId,
+        organizerName,
         eventStartTimestamp: Timestamp.fromDate(startDateTime),
         eventEndTimestamp: Timestamp.fromDate(endDateTime),
-        tags: eventData.tags,
-        image: eventData.image,
         createdAt: now,
         updatedAt: now,
         isActive: true

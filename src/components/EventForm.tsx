@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { eventService } from '../services/eventService';
 import { EventFormData, EVENT_CATEGORIES } from '../types/event';
 import IconSelector from './IconSelector';
+import { useAuth } from '../context/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 const EventForm: React.FC = () => {
+  const { organizerProfile, currentUser } = useAuth();
+
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
     date: '',
     time: '',
-    address: '',
-    latitude: 45.5017,
-    longitude: -73.5673,
+    address: organizerProfile?.address || '',
+    latitude: organizerProfile?.latitude || 0,
+    longitude: organizerProfile?.longitude || 0,
     category: 'Musique',
     tags: [],
     image: '🎵'
@@ -21,6 +25,21 @@ const EventForm: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [newTag, setNewTag] = useState('');
 
+  useEffect(() => {
+    if (organizerProfile) {
+      setFormData(prev => ({
+        ...prev,
+        address: organizerProfile.address,
+        latitude: organizerProfile.latitude,
+        longitude: organizerProfile.longitude,
+      }));
+    }
+  }, [organizerProfile]);
+  
+  if (!currentUser || !organizerProfile) {
+    return <p>Chargement du profil...</p>; // Ou une redirection
+  }
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -67,6 +86,10 @@ const EventForm: React.FC = () => {
     setMessage(null);
 
     try {
+      if (!currentUser || !organizerProfile) {
+        throw new Error("Utilisateur non authentifié ou profil introuvable.");
+      }
+      
       // Validation basique
       if (!formData.title || !formData.description || !formData.date || !formData.time || !formData.address) {
         throw new Error('Veuillez remplir tous les champs obligatoires');
@@ -81,10 +104,14 @@ const EventForm: React.FC = () => {
       // Validation du format d'heure (HH:MM - HH:MM)
       const timeRegex = /^\d{2}:\d{2} - \d{2}:\d{2}$/;
       if (!timeRegex.test(formData.time)) {
-        throw new Error('Le format d\'heure doit être HH:MM - HH:MM');
+        throw new Error("Le format d'heure doit être HH:MM - HH:MM");
       }
 
-      const eventId = await eventService.addEvent(formData);
+      const eventId = await eventService.addEvent(
+        formData,
+        currentUser.uid,
+        organizerProfile.organizerName
+      );
       setMessage({ type: 'success', text: `Événement créé avec succès! ID: ${eventId}` });
       
       // Réinitialiser le formulaire
@@ -93,9 +120,9 @@ const EventForm: React.FC = () => {
         description: '',
         date: '',
         time: '',
-        address: '',
-        latitude: 45.5017,
-        longitude: -73.5673,
+        address: organizerProfile?.address || '',
+        latitude: organizerProfile?.latitude || 0,
+        longitude: organizerProfile?.longitude || 0,
         category: 'Musique',
         tags: [],
         image: '🎵'
@@ -103,7 +130,7 @@ const EventForm: React.FC = () => {
     } catch (error) {
       setMessage({ 
         type: 'error', 
-        text: error instanceof Error ? error.message : 'Une erreur est survenue lors de la création de l\'événement' 
+        text: error instanceof Error ? error.message : "Une erreur est survenue lors de la création de l'événement" 
       });
     } finally {
       setIsSubmitting(false);
@@ -211,7 +238,7 @@ const EventForm: React.FC = () => {
             {/* Adresse */}
             <div className="group">
               <label htmlFor="address" className="form-label">
-                Adresse complète *
+                Adresse de l'événement *
               </label>
               <input
                 type="text"
@@ -223,6 +250,7 @@ const EventForm: React.FC = () => {
                 placeholder="123 Rue de la Paix, Montréal, QC"
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">Pré-remplie depuis votre profil. Modifiable pour cet événement.</p>
             </div>
 
             {/* Coordonnées GPS */}

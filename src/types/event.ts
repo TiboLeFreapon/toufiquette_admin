@@ -6,17 +6,23 @@ export interface Event {
   description: string;
   date: string;
   time: string;
+  category: string;
+  tags: string[];
+  image: string;
+  isActive: boolean;
+  
+  // Champs de l'organisateur (dénormalisés)
+  organizerId: string;
+  organizerName: string;
   address: string;
   latitude: number;
   longitude: number;
-  category: string;
+  
+  // Timestamps
   eventStartTimestamp: Timestamp;
   eventEndTimestamp: Timestamp;
-  tags: string[];
-  image: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  isActive: boolean;
 }
 
 export interface EventFormData {
@@ -63,5 +69,5 @@ export const CATEGORY_ICONS: Record<string, string[]> = {
 export const SPECIAL_ICONS: Record<string, string[]> = {
   'Nature': ['🌲', '🌳', '🌴', '🌵', '🌾', '🌿', '☘️', '🍀', '🍁', '🍂', '🍃', '🌸', '🌺', '🌻', '🌼', '🌷', '🌱', '🌲'],
   'Tourisme': ['🗺️', '🧭', '🏔️', '🏖️', '🏝️', '🏜️', '🏛️', '🏰', '🏯', '🏟️', '🎡', '🎢', '🎠', '⛰️', '🌊', '🏄', '🚣', '⛵'],
-  'Spectacle': ['🎭', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎻', '🎺', '🎷', '🥁', '🎵', '🎶', '🎸', '🎹', '��', '🎻', '🥁']
+  'Spectacle': ['🎭', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🎻', '🎺', '🎷', '🥁', '🎵', '🎶', '🎸', '��', '🎻', '🥁']
 }; 
