@@ -7,6 +7,7 @@ interface AuthContextType {
   currentUser: User | null;
   organizerProfile: Organizer | null;
   loading: boolean;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,10 +44,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return unsubscribe;
   }, []);
 
+  const logout = async () => {
+    await authService.logout();
+    // L'état sera mis à jour par onAuthStateChanged
+  };
+
   const value = {
     currentUser,
     organizerProfile,
     loading,
+    logout,
   };
 
   return (
