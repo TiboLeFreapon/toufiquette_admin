@@ -158,5 +158,25 @@ export const eventService = {
       console.error('Erreur lors de la récupération des événements actifs:', error);
       throw error;
     }
+  },
+
+  // Récupérer les événements d'un organisateur spécifique
+  async getEventsByOrganizer(organizerId: string): Promise<Event[]> {
+    try {
+      const q = query(
+        collection(db, EVENTS_COLLECTION),
+        where('organizerId', '==', organizerId),
+        orderBy('createdAt', 'desc')
+      );
+      const querySnapshot = await getDocs(q);
+      
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Event[];
+    } catch (error) {
+      console.error("Erreur lors de la récupération des événements de l'organisateur:", error);
+      throw error;
+    }
   }
 }; 

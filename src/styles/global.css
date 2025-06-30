@@ -1149,6 +1149,7 @@ code {
   backdrop-filter: blur(4px);
   position: relative;
   overflow: hidden;
+  transition: opacity 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card::before {
@@ -1179,6 +1180,43 @@ code {
   position: relative;
   z-index: 10;
   padding: 2rem;
+}
+
+/* Styles pour les événements passés */
+.card.is-past {
+  opacity: 0.65;
+  border: 1px solid #d1d5db; /* Un gris clair */
+  box-shadow: none;
+}
+
+.card.is-past:hover {
+  opacity: 0.8;
+}
+
+/* Pastille de statut pour les événements */
+.status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  z-index: 10;
+}
+
+/* Couleurs spécifiques par statut */
+.status-badge.is-past-badge {
+  background-color: #4b5563; /* Gris foncé */
+}
+
+.status-badge.is-active-badge {
+  background-color: #16a34a; /* Vert */
+}
+
+.status-badge.is-inactive-badge {
+  background-color: #dc2626; /* Rouge */
 }
 
 /* Custom navigation styles */
